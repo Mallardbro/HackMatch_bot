@@ -7,34 +7,50 @@ from matplotlib import pyplot as plt
 # - Collect screenshots with violet-pip visible
 
 class Grid:
-    def __init__(self, _tiles):
+    def __init__(self):
+        # pre_tiles to be populated with found tiles
+        self.pre_tiles = []
+        # tiles to be populated with pre_tiles and None for correct indexing.
+        self.tiles = []
+        self.set_up = False
 
+    def setup_tiles(self):
+        # To be called when pre_tiles is filled with all of the found tiles
         # Set row of tiles ('normalise' y by subtracting minimum.)
-        min_y = min([t.iy for t in _tiles])
-        for t in _tiles:
+        min_y = min([t.iy for t in self.pre_tiles])
+        for t in self.pre_tiles:
             t.row = int(round((t.iy - min_y) / 100))
             t.set_index()
 
-        tiles.sort(key=lambda x: x.index)
         self.tiles = [None] * 70
-        for t in _tiles:
+        for t in self.pre_tiles:
             self.tiles[t.index] = t
+        self.set_up = True
+        print("Grid set up.")
+
+    def check_set_up(self):
+        if not self.set_up:
+            raise ValueError('Grid is not set up.')
 
     def get_row(self, num):
+        self.check_set_up()
         return self.tiles[num * 7:num * 7 + 7]
 
     def get_column(self, num):
+        self.check_set_up()
         return self.tiles[num::7]
 
     def draw(self):
-        for t in tiles:
+        self.check_set_up()
+        for t in self.tiles:
             if t:
                 t.draw()
 
     def __repr__(self):
-        out = "#|--0-|--1-|--2-|--3-|--4-|--5-|--6-"
+        self.check_set_up()
+        out = "#|--0-|--1-|--2-|--3-|--4-|--5-|--6-|"
         for r in range(10):
-            out += "\n" + str(r) + "|" + "|".join(map(str, self.get_row(r)))
+            out += "\n" + str(r) + "|" + "|".join(map(str, self.get_row(r))) + "|"
         return out
 
 
@@ -79,7 +95,8 @@ full_img_rgb = cv2.imread('..\Images\Screenshots\Screenshot ' + str(screenshot_n
 img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
 img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
-tiles = []
+grid = Grid()
+
 # BGR
 colours = {'red': (0, 0, 255), 'green': (0, 255, 0), 'orange': (0, 172, 255), 'pink': (172, 0, 255),
            'violet': (255, 0, 172)}
@@ -96,32 +113,27 @@ for col in colours:
         loc = np.where(res >= threshold)
         for pt in zip(*loc[::-1]):
             # Over-matching fix: Only add/draw tiles that are far enough away from already found tiles.
-            for t in tiles:
+            for t in grid.pre_tiles:
                 dx = abs(pt[0] - t.ix)
                 dy = abs(pt[1] - t.iy)
                 if dx < 10 and dy < 10:
                     break
             else:  # I'm so happy that I used this! :)
-                tiles.append(Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
+                grid.pre_tiles.append(Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
+grid.setup_tiles()
+grid.draw()
+print(grid)
 
-griddy = Grid(tiles)
-griddy.draw()
-
-print(griddy)
-
-cv2.imshow('res.png', img_rgb)
+cv2.imshow('Result', img_rgb)
 cv2.waitKey()
 cv2.destroyAllWindows()
 
-print("done")
+print("Done")
 
-DROP = -1
-PICK = 0
-SWITCH = 1
-LEFT = 2
-RIGHT = 3
-moves = [[PICK], [SWITCH, PICK], [PICK, SWITCH, DROP, SWITCH, PICK]]
-
-
-
+# DROP = -1
+# PICK = 0
+# SWITCH = 1
+# LEFT = 2
+# RIGHT = 3
+# moves = [[PICK], [SWITCH, PICK], [PICK, SWITCH, DROP, SWITCH, PICK]]
