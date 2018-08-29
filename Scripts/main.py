@@ -13,18 +13,18 @@ class Grid:
     def get_column(self,num):
         return [t for t in self.tiles if t.col == num]
 
-    def __repr__(self):
-        # Flawed due to empty tiles. Rehaul needed.
-        out = ""
-        indexes = [_t.index for _t in self.tiles]
-        for i in range(70):
-            if i in indexes:
-                out += "|" + self.tiles[i].colour[:2]
-            else:
-                out += "|--"
-            if i%7 == 6:
-                out += "\n"
-        return out
+    # def __repr__(self):
+    #     # Flawed due to empty tiles. Rehaul needed.
+    #     out = ""
+    #     indexes = [_t.index for _t in self.tiles]
+    #     for i in range(70):
+    #         if i in indexes:
+    #             out += "|" + self.tiles[i].colour[:2]
+    #         else:
+    #             out += "|--"
+    #         if i%7 == 6:
+    #             out += "\n"
+    #     return out
 
 
 class Tile:
