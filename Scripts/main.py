@@ -14,18 +14,19 @@ class Grid:
 
     def get_row(self, num):
         # Change to mod arithmetic, we want all elements in row, not just valid tiles.
-        valid = [t for t in self.tiles if t]
-        return [t for t in valid if t.row == num]
+        # valid = [t for t in self.tiles if t]
+        # return [t for t in valid if t.row == num]
+        return self.tiles[num * 7:num * 7 + 7]
 
     def get_column(self, num):
-        # Change to mod arithmetic, we want all elements in colmun, not just valid tiles.
-        valid = [t for t in self.tiles if t]
-        return [t for t in valid if t.col == num]
+        # Change to mod arithmetic, we want all elements in column, not just valid tiles.
+        # valid = [t for t in self.tiles if t]
+        # return [t for t in valid if t.col == num]
+        return self.tiles[num::7]
 
     def __repr__(self):
         # Flawed due to empty tiles. Rehaul needed. Sort and calculate gaps to be filled with Xs?
         chars = [t.colour[0] if t else "X" for t in self.tiles]
-        print(chars)
         rows = ["".join(chars[k:k + 7]) for k in range(0, 70, 7)]
         return "-" * 7 + "\n" + "\n".join(rows) + "\n" + "-" * 7
 
@@ -43,6 +44,8 @@ class Tile:
     def set_index(self):
         self.index = self.row * 7 + self.col
 
+    def __repr__(self):
+        return f"<{self.colour}>"
 
 tiles = []
 
@@ -76,6 +79,7 @@ for col in colours:
                     break
             else:  # I'm so happy that I used this! :)
                 tiles.append(Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
+                # TODO - Move this into Tile class? Tile.draw()?
                 if not pip:
                     cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), colours[col], -1)
                 else:
@@ -90,8 +94,8 @@ for t in tiles:
 
 tiles.sort(key=lambda x: x.index)
 griddy = Grid(tiles)
-print([t.colour for t in griddy.get_row(2)])
-print(griddy)
+print([t for t in griddy.get_column(2)])
+#print(griddy)
 
 cv2.imshow('res.png', img_rgb)
 cv2.waitKey()
