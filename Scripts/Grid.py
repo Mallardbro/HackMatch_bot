@@ -19,8 +19,21 @@ class Grid:
         self.tiles = [None] * 70
         for t in self.pre_tiles:
             self.tiles[t.index] = t
-        self.set_up = True
-        print("Grid set up.")
+
+        # Fix for top row being incomplete (matching patterns for some but not whole row)
+        if None in self.get_row(0):
+            print("None in get_row(0)")
+            print(self.get_row(0))
+            self.set_up = True
+
+            return False
+            # self.tiles = self.tiles[7:] + [None] * 7
+            # for i, t in enumerate(self.tiles):
+            #     if t:
+            #         t.index = i
+            #         t.row -= 1
+
+
 
         # TODO - Populate tile.neighbours here.
         for t in self.tiles:
@@ -38,12 +51,17 @@ class Grid:
             if not t.pip:
                 self.tiles_of_colour[t.colour].append(t)
 
+        self.set_up = True
+        print("Grid set up.")
+        return True
+
+
     def check_set_up(self):
         if not self.set_up:
             raise ValueError('Grid is not set up.')
 
     def get_row(self, num):
-        self.check_set_up()
+        # self.check_set_up()
         return self.tiles[num * 7:num * 7 + 7]
 
     def get_column(self, num):

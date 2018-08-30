@@ -1,5 +1,6 @@
 import time
 
+import Settings
 import Tile
 from directkeys import PressKey, ReleaseKey, LEFT, RIGHT, J, K
 
@@ -7,8 +8,8 @@ from directkeys import PressKey, ReleaseKey, LEFT, RIGHT, J, K
 class Intelligence:
     def __init__(self, _grid):
         self.grid = _grid
-        w = self.analyse()
-        self.move(w)
+        # w = self.analyse()
+        # self.move(w)
     def analyse(self):
 
         # Get tiles in each column
@@ -17,7 +18,7 @@ class Intelligence:
         for c in range(7):
             tile_column = self.grid.get_tile_column(c)
             l = len(tile_column)
-
+            #print(tile_column)
             if l > 0:
                 tile_column[0].accessible = 1
                 if l > 1:
@@ -44,7 +45,7 @@ class Intelligence:
 
         worthy_chunks = []
         for ch in chains:
-            print(ch)
+            #print(ch)
             if min([x.accessible for x in ch.tiles]) > 5:
                 # most accessible tile is at least 4 levels down (t.accessible = 99)
                 # print("access-fail")
@@ -83,14 +84,14 @@ class Intelligence:
             winner = worthy_chunks[0]
             print(worthy_chunks[0])
             print([t.index for t in worthy_chunks[0].best_tiles])
-            if len(worthy_chunks) > 1:
-                print("runner-up: -----")
-                print(worthy_chunks[1])
-                print([t.index for t in worthy_chunks[1].best_tiles])
-                if len(worthy_chunks) > 2:
-                    print("third-place: -----")
-                    print(worthy_chunks[2])
-                    print([t.index for t in worthy_chunks[2].best_tiles])
+            # if len(worthy_chunks) > 1:
+            #     print("runner-up: -----")
+            #     print(worthy_chunks[1])
+            #     print([t.index for t in worthy_chunks[1].best_tiles])
+            #     if len(worthy_chunks) > 2:
+            #         print("third-place: -----")
+            #         print(worthy_chunks[2])
+            #         print([t.index for t in worthy_chunks[2].best_tiles])
         return winner
 
     def move(self, winner):
@@ -138,6 +139,8 @@ class Intelligence:
                 repeat = 1
             elif access_tile.accessible == 5:
                 repeat = 2
+            else:
+                raise ValueError(f"acc_tile.accessible = {access_tile.accessible}")
 
             for _ in range(repeat):
                 if dx > 0:
@@ -181,8 +184,7 @@ class Intelligence:
         commands.extend(["left"] * 8)
         commands.extend(["right"] * 3)
 
-        MOVEMENT = True
-        if MOVEMENT:
+        if Settings.MOVEMENT:
             for do in commands:
                 print(do)
                 delta = 0.05
