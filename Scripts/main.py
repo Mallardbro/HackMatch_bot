@@ -71,7 +71,12 @@ for _ in range(frames):
     # print(grid)
     AI = Intelligence.Intelligence(grid)
 
-    winner = AI.analyse()
+    try:
+        winner = AI.analyse()
+    except:
+        print("AI.analyse broke. Next frame...")
+        continue
+
     for t in grid.tiles:
         if t:
             t.text = str(t.index) + "|" + str(t.chained)

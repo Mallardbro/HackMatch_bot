@@ -121,19 +121,19 @@ class Intelligence:
             commands.append("grab")
 
             distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
-            print(distances)
+            # print(distances)
             if len(distances) == 0:
                 print("No dumping column found. How is this possible?")
 
             distances = [x for x in distances if x != 0]
             distances.sort(key=lambda x: abs(x))
-            print("sorted", distances)
+            #print("sorted", distances)
             # distances[
             dumping_col = distances[0]
-            print("dumping_col", dumping_col)
+            #print("dumping_col", dumping_col)
 
             dx = dumping_col
-            print("dx", dx)
+            #print("dx", dx)
             # Dump blocking tile elsewhere and move back
             if access_tile.accessible == 2:
                 repeat = 1
@@ -156,7 +156,7 @@ class Intelligence:
             # chunk should now be accessible
         # Uncovered
         # pick up tiles
-        print("best tiles:", winner.best_tiles)
+        #print("best tiles:", winner.best_tiles)
         for target in winner.best_tiles:
 
             dx = target.col - pos
@@ -186,7 +186,7 @@ class Intelligence:
 
         if Settings.MOVEMENT:
             for do in commands:
-                print(do)
+                #print(do)
                 delta = 0.05
                 k = key_names[do]
                 PressKey(k)
