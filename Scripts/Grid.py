@@ -28,11 +28,11 @@ class Grid:
                 continue
             if t.row != 0:
                 t.neighbours["up"] = self.tiles[t.index - 7]
-            if t.row != 10:
+            if t.row != 9:
                 t.neighbours["down"] = self.tiles[t.index + 7]
             if t.col != 0:
                 t.neighbours["left"] = self.tiles[t.index - 1]
-            if t.col != 7:
+            if t.col != 6:
                 t.neighbours["right"] = self.tiles[t.index + 1]
             # generate coloue lists
             if not t.pip:

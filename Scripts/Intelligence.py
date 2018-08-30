@@ -44,7 +44,7 @@ class Intelligence:
 
         worthy_chunks = []
         for ch in chains:
-            # print(ch)
+            print(ch)
             if min([x.accessible for x in ch.tiles]) > 5:
                 # most accessible tile is at least 4 levels down (t.accessible = 99)
                 # print("access-fail")
@@ -104,17 +104,18 @@ class Intelligence:
         # TODO - what if loose tiles are in the same column!?
         # TODO - check for ...left, right...s in commands
 
+        # Move to column ("Waste full if chunk is already accessible)
+        dx = access_tile.col - pos
+        if dx > 0:
+            commands.extend(["right"] * dx)
+        elif dx < 0:
+            commands.extend(["left"] * (-1 * dx))
+
+        pos = access_tile.col
+
         if access_tile.accessible != 1:
             # Clear space for other tiles
-
-            # Move to column
-            dx = access_tile.col - pos
-            if dx > 0:
-                commands.extend(["right"] * dx)
-            elif dx < 0:
-                commands.extend(["left"] * (-1 * dx))
-
-            pos = access_tile.col
+            print("clear below chunk")
             # Pickup blocking tile
             commands.append("grab")
 
@@ -148,10 +149,11 @@ class Intelligence:
                     commands.append("grab")
                     commands.extend(["right"] * (-1 * dx))
 
-            # chunk should now be accessible
 
+            # chunk should now be accessible
         # Uncovered
         # pick up tiles
+        print("best tiles:", winner.best_tiles)
         for target in winner.best_tiles:
 
             dx = target.col - pos
@@ -176,14 +178,21 @@ class Intelligence:
 
         print(commands)
 
-        for count in range(5, 0, -1):
-            print(count)
+        commands.extend(["left"] * 8)
+        commands.extend(["right"] * 3)
 
-        for do in commands:
-            k = key_names[do]
-            PressKey(k)
-            ReleaseKey(k)
-            time.sleep(0.02)
+        MOVEMENT = True
+        if MOVEMENT:
+            for do in commands:
+                print(do)
+                delta = 0.05
+                k = key_names[do]
+                PressKey(k)
+                time.sleep(delta)
+                ReleaseKey(k)
+                time.sleep(delta)
+        else:
+            print("MOVEMENT = FALSE")
 
 
 

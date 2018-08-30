@@ -34,7 +34,11 @@ class Tile:
                         (255, 255, 255))
 
     def __str__(self):
-        return f"_{self.colour[:3]}"
+        s = f"_{self.colour[:3]}"
+        if self.pip:
+            return s.upper()
+        else:
+            return s
 
     def __repr__(self):
         return str(self)

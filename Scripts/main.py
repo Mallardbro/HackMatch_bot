@@ -1,18 +1,29 @@
+import time
+
 import Grid
 import Intelligence
 import Tile
 import cv2
 import numpy as np
-
-# TODO - Change fake violet-pip.jpg to real image template.
-# - Collect screenshots with violet-pip visible
+from PIL import ImageGrab
 
 # 6 is broken :)
-screenshot_num = 13
+screenshot_num = 0
 
-# Load image, select region, convert to grayscale.
-full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {screenshot_num}.jpg")
-img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
+if screenshot_num == 0:
+    for count in range(3, 0, -1):
+        print(count)
+        time.sleep(1)
+    full_img_bgr = np.array(ImageGrab.grab())
+    full_img_rgb = cv2.cvtColor(full_img_bgr, cv2.COLOR_BGR2RGB)
+    cv2.imwrite("../Images/Screenshots/ImageGrab.jpg", full_img_rgb)
+    img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
+
+else:
+    # Load image, select region, convert to grayscale.
+    full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {screenshot_num}.jpg")
+    img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
+
 img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
 grid = Grid.Grid()
@@ -42,6 +53,7 @@ for col in colours:
                 grid.pre_tiles.append(Tile.Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
 grid.setup_tiles()
+print(grid)
 AI = Intelligence.Intelligence(grid)
 for t in grid.tiles:
     if t:
