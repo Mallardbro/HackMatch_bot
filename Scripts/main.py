@@ -7,10 +7,11 @@ import numpy as np
 # TODO - Change fake violet-pip.jpg to real image template.
 # - Collect screenshots with violet-pip visible
 
-screenshot_num = 1
+# 6 is broken :)
+screenshot_num = 13
 
 # Load image, select region, convert to grayscale.
-full_img_rgb = cv2.imread('..\Images\Screenshots\Screenshot ' + str(screenshot_num) + ".jpg")
+full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {screenshot_num}.jpg")
 img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
 img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 

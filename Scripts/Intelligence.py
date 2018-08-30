@@ -1,11 +1,14 @@
+import time
+
 import Tile
+from directkeys import PressKey, ReleaseKey, LEFT, RIGHT, J, K
 
 
 class Intelligence:
     def __init__(self, _grid):
         self.grid = _grid
-        self.analyse()
-
+        w = self.analyse()
+        self.move(w)
     def analyse(self):
 
         # Get tiles in each column
@@ -71,12 +74,13 @@ class Intelligence:
             ch.score = sum([t.accessible for t in ch.best_tiles]) + ch.tiles[0].accessible
             worthy_chunks.append(ch)
         # print("w_c:", worthy_chunks)
-
+        winner = None
         worthy_chunks.sort(key=lambda x: x.score)
         if len(worthy_chunks) == 0:
             print("no winner!")
         else:
             print("winner: ------")
+            winner = worthy_chunks[0]
             print(worthy_chunks[0])
             print([t.index for t in worthy_chunks[0].best_tiles])
             if len(worthy_chunks) > 1:
@@ -87,9 +91,101 @@ class Intelligence:
                     print("third-place: -----")
                     print(worthy_chunks[2])
                     print([t.index for t in worthy_chunks[2].best_tiles])
+        return winner
 
-        # chains.
-        return
+    def move(self, winner):
+        print("Movement!")
+        pos = 3
+        key_names = {"left": LEFT, "right": RIGHT, "grab": J, "switch": K}
+        commands = []
+        access_tile = winner.tiles[0]
+        columns_of_loose = [t.col for t in winner.best_tiles]
+        # TODO - if one needs removing, just grab and switch
+        # TODO - what if loose tiles are in the same column!?
+        # TODO - check for ...left, right...s in commands
+
+        if access_tile.accessible != 1:
+            # Clear space for other tiles
+
+            # Move to column
+            dx = access_tile.col - pos
+            if dx > 0:
+                commands.extend(["right"] * dx)
+            elif dx < 0:
+                commands.extend(["left"] * (-1 * dx))
+
+            pos = access_tile.col
+            # Pickup blocking tile
+            commands.append("grab")
+
+            distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
+            print(distances)
+            if len(distances) == 0:
+                print("No dumping column found. How is this possible?")
+
+            distances = [x for x in distances if x != 0]
+            distances.sort(key=lambda x: abs(x))
+            print("sorted", distances)
+            # distances[
+            dumping_col = distances[0]
+            print("dumping_col", dumping_col)
+
+            dx = dumping_col
+            print("dx", dx)
+            # Dump blocking tile elsewhere and move back
+            if access_tile.accessible == 2:
+                repeat = 1
+            elif access_tile.accessible == 5:
+                repeat = 2
+
+            for _ in range(repeat):
+                if dx > 0:
+                    commands.extend(["right"] * dx)
+                    commands.append("grab")
+                    commands.extend(["left"] * dx)
+                elif dx < 0:
+                    commands.extend(["left"] * (-1 * dx))
+                    commands.append("grab")
+                    commands.extend(["right"] * (-1 * dx))
+
+            # chunk should now be accessible
+
+        # Uncovered
+        # pick up tiles
+        for target in winner.best_tiles:
+
+            dx = target.col - pos
+            if target.col > pos:
+                commands.extend(["right"] * dx)
+                if target.accessible == 2:
+                    commands.append("switch")
+                elif target.accessible == 5:
+                    commands.extend(["grab", "switch", "grab", "switch"])
+                commands.append("grab")
+                commands.extend(["left"] * dx)
+                commands.append("grab")
+            elif target.col < pos:
+                commands.extend(["left"] * (-dx))
+                if target.accessible == 2:
+                    commands.append("switch")
+                elif target.accessible == 5:
+                    commands.extend(["grab", "switch", "grab", "switch"])
+                commands.append("grab")
+                commands.extend(["right"] * (-dx))
+                commands.append("grab")
+
+        print(commands)
+
+        for count in range(5, 0, -1):
+            print(count)
+
+        for do in commands:
+            k = key_names[do]
+            PressKey(k)
+            ReleaseKey(k)
+            time.sleep(0.02)
+
+
 
 
 class Chain:
