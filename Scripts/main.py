@@ -1,14 +1,13 @@
+import Grid
+import Intelligence
+import Tile
 import cv2
 import numpy as np
-import Grid
-import Tile
-
-from matplotlib import pyplot as plt
 
 # TODO - Change fake violet-pip.jpg to real image template.
 # - Collect screenshots with violet-pip visible
 
-screenshot_num = 12
+screenshot_num = 1
 
 # Load image, select region, convert to grayscale.
 full_img_rgb = cv2.imread('..\Images\Screenshots\Screenshot ' + str(screenshot_num) + ".jpg")
@@ -42,9 +41,12 @@ for col in colours:
                 grid.pre_tiles.append(Tile.Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
 grid.setup_tiles()
+AI = Intelligence.Intelligence(grid)
+for t in grid.tiles:
+    if t:
+        t.text = str(t.index) + "|" + str(t.chained)
 grid.draw(img_rgb)
-print(grid)
-
+print("...")
 cv2.imshow('Result', img_rgb)
 cv2.waitKey()
 cv2.destroyAllWindows()

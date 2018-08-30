@@ -5,6 +5,8 @@ class Grid:
         # tiles to be populated with pre_tiles and None for correct indexing.
         self.tiles = []
         self.set_up = False
+        self.tiles_of_colour = {'red': [], 'green': [], 'orange': [], 'pink': [],
+                                'violet': []}
 
     def setup_tiles(self):
         # To be called when pre_tiles is filled with all of the found tiles
@@ -20,6 +22,22 @@ class Grid:
         self.set_up = True
         print("Grid set up.")
 
+        # TODO - Populate tile.neighbours here.
+        for t in self.tiles:
+            if not t:
+                continue
+            if t.row != 0:
+                t.neighbours["up"] = self.tiles[t.index - 7]
+            if t.row != 10:
+                t.neighbours["down"] = self.tiles[t.index + 7]
+            if t.col != 0:
+                t.neighbours["left"] = self.tiles[t.index - 1]
+            if t.col != 7:
+                t.neighbours["right"] = self.tiles[t.index + 1]
+            # generate coloue lists
+            if not t.pip:
+                self.tiles_of_colour[t.colour].append(t)
+
     def check_set_up(self):
         if not self.set_up:
             raise ValueError('Grid is not set up.')
@@ -31,6 +49,17 @@ class Grid:
     def get_column(self, num):
         self.check_set_up()
         return self.tiles[num::7]
+
+    def get_tile_column(self, num):
+        # Removes leading None elements from columns.
+        c = self.get_column(num)[::-1]
+        i = 0
+        for t in c:
+            if not t:
+                i += 1
+            else:
+                break
+        return c[i:]
 
     def draw(self, _image):
         self.check_set_up()
