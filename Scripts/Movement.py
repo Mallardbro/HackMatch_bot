@@ -1,14 +1,27 @@
-import time
+class Player():
+    def __init__(self):
+        self.pos = 3
+        self.command_str = ""
 
-from directkeys import PressKey, ReleaseKey, J
+    def move_to(self, _target):
+        dx = _target - self.pos
+        if dx > 0:
+            self.command_str += "r" * dx
+        else:
+            self.command_str += "l" * (-dx)
+        self.pos = _target
 
-print("ready...")
-time.sleep(3)
+    def grab(self):
+        self.command_str += "g"
 
-PressKey(J)
-time.sleep(0.017)
-ReleaseKey(J)
-time.sleep(0.017)
+    def drop(self):
+        self.command_str += "g"
 
-PressKey(J)
-ReleaseKey(J)
+    def switch(self):
+        self.command_str += "s"
+
+    def left(self):
+        self.command_str += "l"
+
+    def right(self)
+        self.command_str += "r"

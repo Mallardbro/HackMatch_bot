@@ -1,5 +1,5 @@
 # 6 is broken :)
-SCREENSHOT_NUMBER = 18
+SCREENSHOT_NUMBER = 0
 
 
 DELTA = 0.034

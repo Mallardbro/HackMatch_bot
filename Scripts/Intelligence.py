@@ -84,14 +84,13 @@ class Intelligence:
         return winner
 
     def move(self, winner):
-        print("Movement!")
+        print(f"MOVEMENT = {Settings.MOVEMENT}")
         key_names = {"l": LEFT, "r": RIGHT, "g": J, "s": K}
         commands = []
 
         access_tile = winner.tiles[0]
         columns_of_loose = [t.col for t in winner.best_tiles]
-        # TODO - if one needs removing, just grab and switch
-        # TODO - check for ...left, right...s in commands
+
 
         # Move to column (Waste-full if chunk is already accessible)
         dx = access_tile.col - self.pos
@@ -185,19 +184,17 @@ class Intelligence:
         # Keep track of location. (No need to return to centre)
         Settings.PLAYER_POS = access_tile.col
 
-        # Temporary fix for over-moving?
+        # Temporary fix for 'left, right' 'right, left' over-moving?
         sequence = "".join([m[0] for m in commands])
         while "rl" in sequence or "lr" in sequence:
             sequence = sequence.replace("rl", "")
             sequence = sequence.replace("lr", "")
-
         commands = list(sequence)
 
         if Settings.MOVEMENT:
             for do in commands:
                 # if do == "noop":
                 #    time.sleep(Settings.DELTA)
-
                 k = key_names[do]
                 PressKey(k)
                 time.sleep(Settings.DELTA)
@@ -205,8 +202,6 @@ class Intelligence:
                 time.sleep(Settings.DELTA)
                 if do == "switch":
                     time.sleep(Settings.DELTA)
-        else:
-            print("MOVEMENT = FALSE")
 
         print(commands)
 

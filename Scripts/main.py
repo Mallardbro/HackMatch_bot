@@ -70,7 +70,7 @@ while frames != -1:
         if t:
             t.text = str(t.index) + "|" + str(t.chained)
     grid.draw(img_rgb)
-    print(grid)
+    # print(grid)
     if not winner:
         print("no winner for this frame,. sleep!")
         time.sleep(0.017)
