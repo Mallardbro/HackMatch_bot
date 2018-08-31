@@ -63,8 +63,7 @@ for _ in range(frames):
 
     grid.setup_tiles()
 
-
-    print("...")
+    # print("...")
     # print(grid)
     AI = Intelligence.Intelligence(grid)
 

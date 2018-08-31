@@ -10,6 +10,7 @@ class Intelligence:
         self.grid = _grid
         # w = self.analyse()
         # self.move(w)
+        self.pos = Settings.PLAYER_POS
     def analyse(self):
 
         # Get tiles in each column
@@ -25,6 +26,8 @@ class Intelligence:
                     tile_column[1].accessible = 2
                     if l > 2:
                         tile_column[2].accessible = 5
+                        if l > 3:
+                            tile_column[3].accessible = 7
         chain_id = 0
         for t in self.grid.tiles[::-1]:
             if t:
@@ -77,13 +80,11 @@ class Intelligence:
         # print("w_c:", worthy_chunks)
         winner = None
         worthy_chunks.sort(key=lambda x: x.score)
-        if len(worthy_chunks) == 0:
-            print("no winner!")
-        else:
-            print("winner: ------")
+        # if len(worthy_chunks) == 0:
+        # print("no winner!")
+        if len(worthy_chunks) > 0:
             winner = worthy_chunks[0]
-            print(worthy_chunks[0])
-            print([t.index for t in worthy_chunks[0].best_tiles])
+            print("Winner: ", winner)
             # if len(worthy_chunks) > 1:
             #     print("runner-up: -----")
             #     print(worthy_chunks[1])
@@ -96,7 +97,6 @@ class Intelligence:
 
     def move(self, winner):
         print("Movement!")
-        pos = 3
         key_names = {"left": LEFT, "right": RIGHT, "grab": J, "switch": K}
         commands = []
         access_tile = winner.tiles[0]
@@ -106,18 +106,18 @@ class Intelligence:
         # TODO - check for ...left, right...s in commands
 
         # Move to column ("Waste full if chunk is already accessible)
-        dx = access_tile.col - pos
+        dx = access_tile.col - self.pos
         dx_save = dx
         if dx > 0:
             commands.extend(["right"] * dx)
         elif dx < 0:
             commands.extend(["left"] * (-1 * dx))
 
-        pos = access_tile.col
+        self.pos = access_tile.col
 
         if access_tile.accessible != 1:
             # Clear space for other tiles
-            print("clear below chunk")
+            #print("clear below chunk")
             # Pickup blocking tile
             commands.append("grab")
 
@@ -158,41 +158,65 @@ class Intelligence:
         # pick up tiles
         #print("best tiles:", winner.best_tiles)
         for target in winner.best_tiles:
+            if (target.accessible > 7):
+                print("----------------------------------")
+                print("-----------t.a > 7----------------")
+                print("----------------------------------")
+                print("----------------------------------")
 
-            dx = target.col - pos
-            if target.col > pos:
+            dx = target.col - self.pos
+            if target.col > self.pos:
                 commands.extend(["right"] * dx)
                 if target.accessible == 2:
                     commands.append("switch")
                 elif target.accessible == 5:
                     commands.extend(["grab", "switch", "grab", "switch"])
+                elif target.accessible == 7:
+                    print("digging")
+                    # best tile is deep down- do some digging
+                    if target.col != 0:
+                        commands.extend(["grab", "left", "grab", "right", "grab", "switch", "grab", "switch"])
+                    else:
+                        commands.extend(["grab", "right", "grab", "left", "grab", "switch", "grab", "switch"])
                 commands.append("grab")
                 commands.extend(["left"] * dx)
                 commands.append("grab")
-            elif target.col < pos:
+            elif target.col < self.pos:
                 commands.extend(["left"] * (-dx))
                 if target.accessible == 2:
                     commands.append("switch")
                 elif target.accessible == 5:
                     commands.extend(["grab", "switch", "grab", "switch"])
+                elif target.accessible == 7:
+                    print("digging")
+                    # best tile is deep down- do some digging
+                    if target.col != 0:
+                        commands.extend(["grab", "left", "grab", "right", "grab", "switch", "grab", "switch"])
+                    else:
+                        commands.extend(["grab", "right", "grab", "left", "grab", "switch", "grab", "switch"])
                 commands.append("grab")
                 commands.extend(["right"] * (-dx))
                 commands.append("grab")
 
         # Return to centre
-        commands.extend(["left"] * 6)
-        commands.extend(["right"] * 3)
+        # commands.extend(["left"] * 6)
+        # commands.extend(["right"] * 3)
+        Settings.PLAYER_POS = access_tile.col
 
         if Settings.MOVEMENT:
             for do in commands:
-                #print(do)
+                # if do == "noop":
+                #    time.sleep(Settings.DELTA)
+
                 k = key_names[do]
                 PressKey(k)
                 time.sleep(Settings.DELTA)
                 ReleaseKey(k)
                 time.sleep(Settings.DELTA)
+                if do == "switch":
+                    time.sleep(Settings.DELTA)
         else:
-            print("MOVEMENT = FALkSE")
+            print("MOVEMENT = FALSE")
 
         print(commands)
 
@@ -222,4 +246,4 @@ class Chain:
             _id = -1
         else:
             _id = self.tiles[0].chained
-        return f"<{self.colour.capitalize()} Chain #{_id} | len={len(self)} | score={self.score} | {[t.index for t in self.tiles]}>"
+        return f"<{self.colour.capitalize()} Chain #{_id} | len={len(self)} | score={self.score} | {[t.index for t in self.tiles]} | {[t.index for t in self.best_tiles]}>"
