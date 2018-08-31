@@ -27,7 +27,7 @@ class Grid:
                     t.row -= 1
 
         self.init_neighbours()
-        print("Grid set up.")
+        # print("Grid set up.")
         return
 
     def init_neighbours(self):

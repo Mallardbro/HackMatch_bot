@@ -32,14 +32,14 @@ while frames != -1:
     else:
         full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {Settings.SCREENSHOT_NUMBER}.jpg")
 
-    full_img_rgb = cv2.resize(full_img_rgb, (2560, 1440))
-    cv2.imwrite("../Images/Screenshots/Rescaled.jpg", full_img_rgb)
-    res_x = full_img_rgb.shape[1]
-    res_y = full_img_rgb.shape[0]
-    prop_x = 1  # res_x / 2560
-    prop_y = 1  # res_y / 1440
-    img_rgb = full_img_rgb[int(180 * prop_x):int(1070 * prop_x), int(580 * prop_y):int(1270 * prop_y)]
-    cv2.imwrite("../Images/Screenshots/ROI.jpg", img_rgb)
+    # Uncomment if resolution is not 1440p (That's a lot of pixels!)
+    # full_img_rgb = cv2.resize(full_img_rgb, (2560, 1440))
+    # [Debug purposes] cv2.imwrite("../Images/Screenshots/Rescaled.jpg", full_img_rgb)
+    # res_x = full_img_rgb.shape[1]
+    # res_y = full_img_rgb.shape[0]
+
+    img_rgb = full_img_rgb[180:1070, 580:1270]
+    # cv2.imwrite("../Images/Screenshots/ROI.jpg", img_rgb)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
     grid = Grid.Grid()
@@ -97,3 +97,4 @@ while frames != -1:
     cv2.destroyAllWindows()
 
     print(f"Done with frame {frames}")
+

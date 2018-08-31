@@ -9,6 +9,8 @@ import time
 SendInput = ctypes.windll.user32.SendInput
 
 LEFT = 0x1E
+LEFTa = 0xCB
+RIGHTa = 0xCD
 RIGHT = 0x20
 J = 0x24
 K = 0x25
