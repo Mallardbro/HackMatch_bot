@@ -26,12 +26,20 @@ while frames != -1:
     if Settings.SCREENSHOT_NUMBER == 0:
         full_img_bgr = np.array(ImageGrab.grab())
         full_img_rgb = cv2.cvtColor(full_img_bgr, cv2.COLOR_BGR2RGB)
+
         # cv2.imwrite("../Images/Screenshots/ImageGrab.jpg", full_img_rgb)
-        img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
+
     else:
         full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {Settings.SCREENSHOT_NUMBER}.jpg")
-        img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
 
+    full_img_rgb = cv2.resize(full_img_rgb, (2560, 1440))
+    cv2.imwrite("../Images/Screenshots/Rescaled.jpg", full_img_rgb)
+    res_x = full_img_rgb.shape[1]
+    res_y = full_img_rgb.shape[0]
+    prop_x = 1  # res_x / 2560
+    prop_y = 1  # res_y / 1440
+    img_rgb = full_img_rgb[int(180 * prop_x):int(1070 * prop_x), int(580 * prop_y):int(1270 * prop_y)]
+    cv2.imwrite("../Images/Screenshots/ROI.jpg", img_rgb)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
     grid = Grid.Grid()
@@ -49,7 +57,7 @@ while frames != -1:
             loc = np.where(res >= threshold)
             for pt in zip(*loc[::-1]):
                 # Over-matching fix: Only add/draw tiles that are far enough away from already found tiles.
-                for t in grid.pre_tiles:
+                for t in grid.pre_tiles[::-1]:
                     dx = abs(pt[0] - t.ix)
                     dy = abs(pt[1] - t.iy)
                     if dx < 10 and dy < 10:

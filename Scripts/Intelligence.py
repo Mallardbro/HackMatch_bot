@@ -193,8 +193,6 @@ class Intelligence:
 
         if Settings.MOVEMENT:
             for do in commands:
-                # if do == "noop":
-                #    time.sleep(Settings.DELTA)
                 k = key_names[do]
                 PressKey(k)
                 time.sleep(Settings.DELTA)

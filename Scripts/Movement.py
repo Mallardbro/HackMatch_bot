@@ -23,5 +23,5 @@ class Player():
     def left(self):
         self.command_str += "l"
 
-    def right(self)
+    def right(self):
         self.command_str += "r"
