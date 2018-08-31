@@ -8,28 +8,27 @@ import cv2
 import numpy as np
 from PIL import ImageGrab
 
-# 6 is broken :)
+colours = {'red': (0, 0, 255), 'green': (0, 255, 0), 'orange': (0, 172, 255), 'pink': (172, 0, 255),
+           'violet': (255, 0, 172)}
 
-
-frames = 1
+frames = -2
 
 if Settings.SCREENSHOT_NUMBER == 0:
-    frames = 10000
+    frames = 0
     for count in range(3, 0, -1):
         print(count)
         time.sleep(1)
 
-for _ in range(frames):
+while frames != -1:
+    frames += 1
 
+    # Load image, select region, convert to grayscale.
     if Settings.SCREENSHOT_NUMBER == 0:
-
         full_img_bgr = np.array(ImageGrab.grab())
         full_img_rgb = cv2.cvtColor(full_img_bgr, cv2.COLOR_BGR2RGB)
         # cv2.imwrite("../Images/Screenshots/ImageGrab.jpg", full_img_rgb)
         img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
-
     else:
-        # Load image, select region, convert to grayscale.
         full_img_rgb = cv2.imread(f"..\Images\Screenshots\Screenshot {Settings.SCREENSHOT_NUMBER}.jpg")
         img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
 
@@ -37,16 +36,13 @@ for _ in range(frames):
 
     grid = Grid.Grid()
 
-    # BGR
-    colours = {'red': (0, 0, 255), 'green': (0, 255, 0), 'orange': (0, 172, 255), 'pink': (172, 0, 255),
-               'violet': (255, 0, 172)}
     for col in colours:
+        # Loop through all templates, colours and pips, and append to the grid's list of tiles.
         for pip in [True, False]:
             if pip:
                 template = cv2.imread(f"../Images/Templates/{col}-pip.jpg", 0)
             else:
                 template = cv2.imread(f"../Images/Templates/{col}.jpg", 0)
-
             w, h = template.shape[::-1]
             res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
             threshold = 0.92
@@ -62,9 +58,6 @@ for _ in range(frames):
                     grid.pre_tiles.append(Tile.Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
     grid.setup_tiles()
-
-    # print("...")
-    # print(grid)
     AI = Intelligence.Intelligence(grid)
 
     try:
@@ -77,7 +70,7 @@ for _ in range(frames):
         if t:
             t.text = str(t.index) + "|" + str(t.chained)
     grid.draw(img_rgb)
-
+    print(grid)
     if not winner:
         print("no winner for this frame,. sleep!")
         time.sleep(0.017)
@@ -93,14 +86,6 @@ for _ in range(frames):
     if Settings.SHOW_WINDOW:
         cv2.imshow('Result', img_rgb)
         cv2.waitKey()
-
-
     cv2.destroyAllWindows()
 
-    print(f"Done with frame {_}")
-    # DROP = -1
-# PICK = 0
-# SWITCH = 1
-# LEFT = 2
-# RIGHT = 3
-# moves = [[PICK], [SWITCH, PICK], [PICK, SWITCH, DROP, SWITCH, PICK]]
+    print(f"Done with frame {frames}")

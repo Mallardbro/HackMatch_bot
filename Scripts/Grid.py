@@ -3,8 +3,7 @@ class Grid:
         # pre_tiles to be populated with found tiles
         self.pre_tiles = []
         # tiles to be populated with pre_tiles and None for correct indexing.
-        self.tiles = []
-        self.set_up = False
+        self.tiles = [None] * 70
         self.tiles_of_colour = {'red': [], 'green': [], 'orange': [], 'pink': [],
                                 'violet': []}
 
@@ -15,23 +14,23 @@ class Grid:
         for t in self.pre_tiles:
             t.row = int(round((t.iy - min_y) / 100))
             t.set_index()
-
-        self.tiles = [None] * 70
-        for t in self.pre_tiles:
             self.tiles[t.index] = t
+            if not t.pip:
+                self.tiles_of_colour[t.colour].append(t)
 
         # Fix for top row being incomplete (matching patterns for some but not whole row)
         if None in self.get_row(0):
-
             self.tiles = self.tiles[7:] + [None] * 7
             for i, t in enumerate(self.tiles):
                 if t:
                     t.index = i
                     t.row -= 1
 
+        self.init_neighbours()
+        print("Grid set up.")
+        return
 
-
-        # TODO - Populate tile.neighbours here.
+    def init_neighbours(self):
         for t in self.tiles:
             if not t:
                 continue
@@ -43,19 +42,14 @@ class Grid:
                 t.neighbours["left"] = self.tiles[t.index - 1]
             if t.col != 6:
                 t.neighbours["right"] = self.tiles[t.index + 1]
-            # generate coloue lists
-            if not t.pip:
-                self.tiles_of_colour[t.colour].append(t)
-
-        self.set_up = True
-        print("Grid set up.")
+        return
 
     def check_set_up(self):
-        if not self.set_up:
+        if len([t for t in self.tiles]) == 0:
             raise ValueError('Grid is not set up.')
 
     def get_row(self, num):
-        # self.check_set_up()
+        self.check_set_up()
         return self.tiles[num * 7:num * 7 + 7]
 
     def get_column(self, num):
