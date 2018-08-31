@@ -25,7 +25,7 @@ for _ in range(frames):
 
         full_img_bgr = np.array(ImageGrab.grab())
         full_img_rgb = cv2.cvtColor(full_img_bgr, cv2.COLOR_BGR2RGB)
-        cv2.imwrite("../Images/Screenshots/ImageGrab.jpg", full_img_rgb)
+        # cv2.imwrite("../Images/Screenshots/ImageGrab.jpg", full_img_rgb)
         img_rgb = full_img_rgb[180:180 + 890, 580:580 + 690]
 
     else:
@@ -61,11 +61,8 @@ for _ in range(frames):
                 else:  # I'm so happy that I used this! :)
                     grid.pre_tiles.append(Tile.Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
-    success = grid.setup_tiles()
-    if not success:
-        print("None in row 0, skipping frame, sleeping")
-        time.sleep(0.1)
-        continue
+    grid.setup_tiles()
+
 
     print("...")
     # print(grid)
@@ -82,16 +79,22 @@ for _ in range(frames):
             t.text = str(t.index) + "|" + str(t.chained)
     grid.draw(img_rgb)
 
+    if not winner:
+        print("no winner for this frame,. sleep!")
+        time.sleep(0.017)
+        continue
+
+    try:
+        AI.move(winner)
+    except ValueError:
+        print("AI.move gave valueError, sleep")
+        time.sleep(0.017)
+        continue
+
     if Settings.SHOW_WINDOW:
         cv2.imshow('Result', img_rgb)
         cv2.waitKey()
 
-    if not winner:
-        print("no winner for this frame, sleeping")
-        time.sleep(1)
-        continue
-
-    AI.move(winner)
 
     cv2.destroyAllWindows()
 

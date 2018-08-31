@@ -107,6 +107,7 @@ class Intelligence:
 
         # Move to column ("Waste full if chunk is already accessible)
         dx = access_tile.col - pos
+        dx_save = dx
         if dx > 0:
             commands.extend(["right"] * dx)
         elif dx < 0:
@@ -121,19 +122,18 @@ class Intelligence:
             commands.append("grab")
 
             distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
-            # print(distances)
             if len(distances) == 0:
                 print("No dumping column found. How is this possible?")
-
             distances = [x for x in distances if x != 0]
             distances.sort(key=lambda x: abs(x))
-            #print("sorted", distances)
-            # distances[
             dumping_col = distances[0]
-            #print("dumping_col", dumping_col)
-
             dx = dumping_col
-            #print("dx", dx)
+
+            # col_heights = [999 if c in columns_of_loose else len(self.grid.get_tile_column(c)) for c in range(7)]
+            # print("-"*20)
+            # print(col_heights)
+            # _target = col_heights.index(min(col_heights))
+            # dx = _target - pos
             # Dump blocking tile elsewhere and move back
             if access_tile.accessible == 2:
                 repeat = 1
@@ -179,24 +179,22 @@ class Intelligence:
                 commands.extend(["right"] * (-dx))
                 commands.append("grab")
 
-        print(commands)
-
-        commands.extend(["left"] * 8)
+        # Return to centre
+        commands.extend(["left"] * 6)
         commands.extend(["right"] * 3)
 
         if Settings.MOVEMENT:
             for do in commands:
                 #print(do)
-                delta = 0.05
                 k = key_names[do]
                 PressKey(k)
-                time.sleep(delta)
+                time.sleep(Settings.DELTA)
                 ReleaseKey(k)
-                time.sleep(delta)
+                time.sleep(Settings.DELTA)
         else:
-            print("MOVEMENT = FALSE")
+            print("MOVEMENT = FALkSE")
 
-
+        print(commands)
 
 
 class Chain:
@@ -215,13 +213,6 @@ class Chain:
         if type(ele) != Tile.Tile:
             raise ValueError('Append. Chains must only contain Tiles.')
         self.tiles.append(ele)
-
-    def verbose_print(self):
-        if len(self.tiles) == 0:
-            _id = -1
-        else:
-            _id = self.tiles[0].chained
-        return f"<{self.colour.capitalize()} Chain #{_id} | len={len(self)} | score={self.score} | {[t.index for t in self.tiles]}>"
 
     def __len__(self):
         return len(self.tiles)

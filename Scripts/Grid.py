@@ -22,11 +22,7 @@ class Grid:
 
         # Fix for top row being incomplete (matching patterns for some but not whole row)
         if None in self.get_row(0):
-            # print("None in get_row(0)")
-            # print(self.get_row(0))
-            # self.set_up = True
 
-            # return False
             self.tiles = self.tiles[7:] + [None] * 7
             for i, t in enumerate(self.tiles):
                 if t:
@@ -53,8 +49,6 @@ class Grid:
 
         self.set_up = True
         print("Grid set up.")
-        return True
-
 
     def check_set_up(self):
         if not self.set_up:
