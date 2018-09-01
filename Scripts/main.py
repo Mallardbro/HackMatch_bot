@@ -2,12 +2,16 @@ import time
 
 import Grid
 import Intelligence
+import Movement
 import Settings
 import Tile
 import cv2
 import numpy as np
 from PIL import ImageGrab
 
+player = Movement.Player()
+block_fail_count = 0
+out_of_synce_count = 0
 colours = {'red': (0, 0, 255), 'green': (0, 255, 0), 'orange': (0, 172, 255), 'pink': (172, 0, 255),
            'violet': (255, 0, 172)}
 
@@ -44,6 +48,33 @@ while frames != -1:
 
     grid = Grid.Grid()
 
+    # Get player position
+    player_slice_rgb = full_img_rgb[1170:1200, 580:1265]
+    player_slice_gray = cv2.cvtColor(player_slice_rgb, cv2.COLOR_BGR2GRAY)
+
+    template_player = cv2.imread("../Images/Templates/player.jpg", 0)
+    res = cv2.matchTemplate(player_slice_gray, template_player, cv2.TM_CCOEFF_NORMED)
+    loc = np.where(res >= 0.92)
+
+    try:
+        x = loc[1][0]
+    except IndexError:
+        block_fail_count += 1
+        print(f"Holding a block?? {block_fail_count}")
+        player.grab()
+        player.execute()
+        continue
+
+    x = loc[1][0]
+    _w = player_slice_gray.shape[1]
+    position = int(round((x - _w / 14) / 100))
+    # print(f"Pos = {position}.")
+    if player.pos != position:
+        print(f"Player out of sync -{out_of_synce_count}.")
+    # Out of sync. Re-sync
+    player.pos = position
+
+
     for col in colours:
         # Loop through all templates, colours and pips, and append to the grid's list of tiles.
         for pip in [True, False]:
@@ -65,8 +96,9 @@ while frames != -1:
                 else:  # I'm so happy that I used this! :)
                     grid.pre_tiles.append(Tile.Tile(_ix=pt[0], _iy=pt[1], _colour=col, _pip=pip))
 
+
     grid.setup_tiles()
-    AI = Intelligence.Intelligence(grid)
+    AI = Intelligence.Intelligence(grid, player)
 
     try:
         winner = AI.analyse()

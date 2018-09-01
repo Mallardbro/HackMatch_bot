@@ -6,7 +6,7 @@ from directkeys import PressKey, ReleaseKey, J, K, LEFT, RIGHT
 
 class Player:
     def __init__(self):
-        self.pos = 3
+        self.pos = Settings.PLAYER_POS
         self.command_str = ""
         self.key_names = {"l": LEFT, "r": RIGHT, "g": J, "s": K}
 
@@ -30,9 +30,10 @@ class Player:
             time.sleep(Settings.DELTA)
             ReleaseKey(k)
             time.sleep(Settings.DELTA)
-            if char == "switch":
-                time.sleep(Settings.DELTA)
+            if char == "s":
+                time.sleep(0.5)  # Settings.DELTA*2)
         self.command_str = ""
+        #print(f"I think I'm in POSITION {self.pos}.")
 
     def grab(self):
         self.command_str += "g"

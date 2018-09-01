@@ -1,21 +1,34 @@
-import time
-
 import Settings
 import Tile
-from directkeys import PressKey, ReleaseKey, LEFT, RIGHT, J, K
 
 
 class Intelligence:
-    def __init__(self, _grid):
+    def __init__(self, _grid, _player):
         self.grid = _grid
         self.pos = Settings.PLAYER_POS
+        self.player = _player
 
     def analyse(self):
+
+        # check if height on cols is an issue
+        danger_cols = []
+
+
+
+
+
         # Get tiles in each column
         # Set tile.accessible to number of moves required to grab that tile (1,2,5)
         for c in range(7):
             tile_column = self.grid.get_tile_column(c)
             l = len(tile_column)
+
+            # check if height on cols is an issue
+            if l >= 7:
+                danger_cols.append(c)
+
+
+
             if l > 0:
                 tile_column[0].accessible = 1
                 if l > 1:
@@ -24,6 +37,19 @@ class Intelligence:
                         tile_column[2].accessible = 5
                         if l > 3:
                             tile_column[3].accessible = 7
+        # To-do do this better
+        dump = [c for c in range(7) if c not in danger_cols]
+        for i, c in enumerate(danger_cols):
+            print("DANGER!!!!")
+            self.player.move_to(c)
+            self.player.grab()
+            self.player.move_to(dump[i])
+            self.player.drop()
+            self.player.execute()
+
+        if len(danger_cols) != 0:
+            return None
+
         chains = []
         chain_id = 0
         for t in self.grid.tiles[::-1]:
@@ -71,49 +97,45 @@ class Intelligence:
 
         winner = None
         worthy_chains.sort(key=lambda x: x.score)
+
         if len(worthy_chains) > 0:
-            winner = worthy_chains[0]
-            winner.tiles.sort(key=lambda t: t.accessible)
-            print("Winner: ", winner)
-            # if len(worthy_chains) > 1:
-            #     print("runner-up: -----")
-            #     print(worthy_chains[1])
-            #     if len(worthy_chains) > 2:
-            #         print("third-place: -----")
-            #         print(worthy_chains[2])
+            if any([t.accessible > 7 for t in worthy_chains[0].best_tiles]):
+                return None
+            else:
+                winner = worthy_chains[0]
+                winner.tiles.sort(key=lambda t: t.accessible)
+                print("Winner: ", winner)
+                # if len(worthy_chains) > 1:
+                #     print("runner-up: -----")
+                #     print(worthy_chains[1])
+                #     if len(worthy_chains) > 2:
+                #         print("third-place: -----")
+                #         print(worthy_chains[2])
         return winner
 
     def move(self, winner):
         print(f"MOVEMENT = {Settings.MOVEMENT}")
-        key_names = {"l": LEFT, "r": RIGHT, "g": J, "s": K}
-        commands = []
 
         access_tile = winner.tiles[0]
         columns_of_loose = [t.col for t in winner.best_tiles]
 
-
         # Move to column (Waste-full if chunk is already accessible)
-        dx = access_tile.col - self.pos
-        if dx > 0:
-            commands.extend(["right"] * dx)
-        elif dx < 0:
-            commands.extend(["left"] * (-1 * dx))
-
-        self.pos = access_tile.col
+        self.player.move_to(access_tile.col)
 
         if access_tile.accessible != 1:
             # Clear space for other tiles
-            # print("clear below chunk")
-            # Pickup blocking tile
-            commands.append("grab")
 
-            distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
-            if len(distances) == 0:
-                print("No dumping column found. How is this possible?")
-            distances = [x for x in distances if x != 0]
-            distances.sort(key=lambda x: abs(x))
-            dumping_col = distances[0]
-            dx = dumping_col
+            # distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
+            untaken_cols = [c for c in range(7) if c not in columns_of_loose]
+            distance_sorted = sorted(untaken_cols, key=lambda c: abs(c - access_tile.col))
+            dumping_col = distance_sorted[0]
+            # if len(distances) == 0:
+            #    print("No dumping column found. How is this possible?")
+            # distances = [x for x in distances if x != 0]
+            # distances.sort(key=lambda x: abs(x))
+            # dumping_col = distances[0]
+            # dx = dumping_col
+
 
             # col_heights = [999 if c in columns_of_loose else len(self.grid.get_tile_column(c)) for c in range(7)]
             # print("-"*20)
@@ -125,19 +147,17 @@ class Intelligence:
                 repeat = 1
             elif access_tile.accessible == 5:
                 repeat = 2
+            elif access_tile.accessible == 7:
+                repeat = 3
             else:
                 print(f"acc_tile.accessible = {access_tile.accessible}")
                 raise ValueError(f"acc_tile.accessible = {access_tile.accessible}")
 
             for _ in range(repeat):
-                if dx > 0:
-                    commands.extend(["right"] * dx)
-                    commands.append("grab")
-                    commands.extend(["left"] * dx)
-                elif dx < 0:
-                    commands.extend(["left"] * (-1 * dx))
-                    commands.append("grab")
-                    commands.extend(["right"] * (-1 * dx))
+                self.player.grab()
+                self.player.move_to(dumping_col)
+                self.player.drop()
+                self.player.move_to(access_tile.col)
 
             # Chunk should now be accessible.
 
@@ -146,62 +166,52 @@ class Intelligence:
             if target.accessible > 7:
                 print(f"Target tile.accessible is {target.accessible}. Score of chunk = {winner.score}.")
 
-            dx = target.col - self.pos
-            if target.col > self.pos:
-                commands.extend(["right"] * dx)
-                if target.accessible == 2:
-                    commands.append("switch")
-                elif target.accessible == 5:
-                    commands.extend(["grab", "switch", "grab", "switch"])
-                elif target.accessible == 7:
-                    print("digging")
-                    # best tile is deep down- do some digging
-                    # TODO: Fix - possible to dump tiles and block the chunk here...
-                    if target.col != 0:
-                        commands.extend(["grab", "left", "grab", "right", "grab", "switch", "grab", "switch"])
-                    else:
-                        commands.extend(["grab", "right", "grab", "left", "grab", "switch", "grab", "switch"])
-                commands.append("grab")
-                commands.extend(["left"] * dx)
-                commands.append("grab")
-            elif target.col < self.pos:
-                commands.extend(["left"] * (-dx))
-                if target.accessible == 2:
-                    commands.append("switch")
-                elif target.accessible == 5:
-                    commands.extend(["grab", "switch", "grab", "switch"])
-                elif target.accessible == 7:
-                    print("digging")
-                    # best tile is deep down- do some digging
-                    if target.col != 0:
-                        commands.extend(["grab", "left", "grab", "right", "grab", "switch", "grab", "switch"])
-                    else:
-                        commands.extend(["grab", "right", "grab", "left", "grab", "switch", "grab", "switch"])
-                commands.append("grab")
-                commands.extend(["right"] * (-dx))
-                commands.append("grab")
+            self.player.move_to(target.col)
+
+            if target.accessible == 2:
+                self.player.switch()
+            elif target.accessible == 5:
+                self.player.grab()
+                self.player.switch()
+                self.player.drop()
+                self.player.switch()
+            elif target.accessible == 7:
+                print("digging")
+                # best tile is deep down- do some digging
+                # TODO: Fix - possible to dump tiles and block the chunk here...
+                if target.col != 0:
+                    self.player.command_str += "glgrgsgs"
+                else:
+                    self.player.command_str += "grglgsgs"
+
+            self.player.grab()
+            self.player.move_to(access_tile.col)
+            self.player.drop()
+
 
         # Keep track of location. (No need to return to centre)
         Settings.PLAYER_POS = access_tile.col
 
+        self.player.execute()
+
         # Temporary fix for 'left, right' 'right, left' over-moving?
-        sequence = "".join([m[0] for m in commands])
-        while "rl" in sequence or "lr" in sequence:
-            sequence = sequence.replace("rl", "")
-            sequence = sequence.replace("lr", "")
-        commands = list(sequence)
-
-        if Settings.MOVEMENT:
-            for do in commands:
-                k = key_names[do]
-                PressKey(k)
-                time.sleep(Settings.DELTA)
-                ReleaseKey(k)
-                time.sleep(Settings.DELTA)
-                if do == "switch":
-                    time.sleep(Settings.DELTA)
-
-        print(commands)
+        # sequence = "".join([m[0] for m in commands])
+        # while "rl" in sequence or "lr" in sequence:
+        #     sequence = sequence.replace("rl", "")
+        #     sequence = sequence.replace("lr", "")
+        # commands = list(sequence)
+        #
+        # if Settings.MOVEMENT:
+        #     for do in commands:
+        #         k = key_names[do]
+        #         PressKey(k)
+        #         time.sleep(Settings.DELTA)
+        #         ReleaseKey(k)
+        #         time.sleep(Settings.DELTA)
+        #         if do == "switch":
+        #             time.sleep(Settings.DELTA)
+        #
+        # print(commands)
 
 
 class Chain:
