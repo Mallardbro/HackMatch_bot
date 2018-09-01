@@ -8,24 +8,12 @@ class Intelligence:
         self.pos = Settings.PLAYER_POS
         self.player = _player
 
-    def analyse(self):
-
-        # check if height on cols is an issue
-        danger_cols = []
-
-
-
-
-
+    def set_accessiblity(self):
         # Get tiles in each column
-        # Set tile.accessible to number of moves required to grab that tile (1,2,5)
+        # Set tile.accessible to number of moves required to grab that tile (1,2,5,7)
         for c in range(7):
             tile_column = self.grid.get_tile_column(c)
             l = len(tile_column)
-
-            # check if height on cols is an issue
-            if l >= 7:
-                danger_cols.append(c)
 
             if l > 0:
                 tile_column[0].accessible = 1
@@ -35,19 +23,8 @@ class Intelligence:
                         tile_column[2].accessible = 5
                         if l > 3:
                             tile_column[3].accessible = 7
-        # To-do do this better
-        # dump = [c for c in range(7) if c not in danger_cols]
-        # for i, c in enumerate(danger_cols):
-        #     print("DANGER!!!!")
-        #     self.player.move_to(c)
-        #     self.player.grab()
-        #     self.player.move_to(dump[i])
-        #     self.player.drop()
-        #     self.player.execute()
 
-        # if len(danger_cols) != 0:
-        #    return None
-
+    def get_chains(self):
         chains = []
         chain_id = 0
         for t in self.grid.tiles[::-1]:
@@ -65,13 +42,12 @@ class Intelligence:
                                 checks.extend(n.neighbours.values())
                     chains.append(current)
                     chain_id += 1
+        return chains
 
+    def get_best_chain(self, _chains, _target_chunk_size):
         worthy_chains = []
-        for ch in chains:
-            if min([x.accessible for x in ch.tiles]) > 7:
-                # most accessible tile is at least 5 levels down (t.accessible = 99)
-                continue
-            needed = 4 - len(ch)
+        for ch in _chains:
+            needed = _target_chunk_size - len(ch)
             if needed <= 0:
                 raise ValueError('Score is 0 or negative somehow')
 
@@ -108,6 +84,29 @@ class Intelligence:
                 #     if len(worthy_chains) > 2:
                 #         print("third-place: -----")
                 #         print(worthy_chains[2])
+        return winner
+
+    def analyse(self):
+
+        self.set_accessiblity()
+
+        all_chains = self.get_chains()
+        chains = []
+        for ch in all_chains:
+            # Filter out chains that can't be accessed
+            if min([x.accessible for x in ch.tiles]) <= 7:
+                chains.append(ch)
+
+        winner = self.get_best_chain(chains, 4)
+        if not winner:
+
+            winner = self.get_best_chain(chains, 3)
+            if winner:
+                print("FOUND A 3-CHAIN. 333")
+            else:
+                winner = self.get_best_chain(chains, 2)
+                if winner:
+                    print("FOUND A 2-CHAIN. 22")
         return winner
 
     def move(self, winner):

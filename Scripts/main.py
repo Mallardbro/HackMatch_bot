@@ -72,6 +72,7 @@ while frames != -1:
         player.grab()
         if Settings.MOVEMENT:
             player.execute()
+        time.sleep(Settings.DELTA)
         continue
 
     x = loc[1][0]
@@ -108,6 +109,8 @@ while frames != -1:
 
     grid.setup_tiles()
     AI = Intelligence.Intelligence(grid, player)
+
+    # winner = AI.analyse()
 
     try:
         winner = AI.analyse()
