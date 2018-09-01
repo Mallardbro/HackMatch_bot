@@ -27,8 +27,6 @@ class Intelligence:
             if l >= 7:
                 danger_cols.append(c)
 
-
-
             if l > 0:
                 tile_column[0].accessible = 1
                 if l > 1:
@@ -38,23 +36,22 @@ class Intelligence:
                         if l > 3:
                             tile_column[3].accessible = 7
         # To-do do this better
-        dump = [c for c in range(7) if c not in danger_cols]
-        for i, c in enumerate(danger_cols):
-            print("DANGER!!!!")
-            self.player.move_to(c)
-            self.player.grab()
-            self.player.move_to(dump[i])
-            self.player.drop()
-            self.player.execute()
+        # dump = [c for c in range(7) if c not in danger_cols]
+        # for i, c in enumerate(danger_cols):
+        #     print("DANGER!!!!")
+        #     self.player.move_to(c)
+        #     self.player.grab()
+        #     self.player.move_to(dump[i])
+        #     self.player.drop()
+        #     self.player.execute()
 
-        if len(danger_cols) != 0:
-            return None
+        # if len(danger_cols) != 0:
+        #    return None
 
         chains = []
         chain_id = 0
         for t in self.grid.tiles[::-1]:
             if t:
-
                 if not t.pip and t.chained == -1:
                     t.chained = chain_id
                     current = Chain(t.colour)
@@ -114,7 +111,7 @@ class Intelligence:
         return winner
 
     def move(self, winner):
-        print(f"MOVEMENT = {Settings.MOVEMENT}")
+        #print(f"MOVEMENT = {Settings.MOVEMENT}")
 
         access_tile = winner.tiles[0]
         columns_of_loose = [t.col for t in winner.best_tiles]
@@ -124,9 +121,8 @@ class Intelligence:
 
         if access_tile.accessible != 1:
             # Clear space for other tiles
-
             # distances = [c - access_tile.col for c in range(7) if c not in columns_of_loose]
-            untaken_cols = [c for c in range(7) if c not in columns_of_loose]
+            untaken_cols = [c for c in range(7) if c not in columns_of_loose + [access_tile.col]]
             distance_sorted = sorted(untaken_cols, key=lambda c: abs(c - access_tile.col))
             dumping_col = distance_sorted[0]
             # if len(distances) == 0:
@@ -164,7 +160,8 @@ class Intelligence:
         # Pick up loose tiles
         for target in winner.best_tiles:
             if target.accessible > 7:
-                print(f"Target tile.accessible is {target.accessible}. Score of chunk = {winner.score}.")
+                # Should not happen now
+                raise IndexError(f"Target tile.accessible is {target.accessible}. Score of chunk = {winner.score}.")
 
             self.player.move_to(target.col)
 
@@ -188,30 +185,11 @@ class Intelligence:
             self.player.move_to(access_tile.col)
             self.player.drop()
 
-
-        # Keep track of location. (No need to return to centre)
+        # Keep track of location. (No need to return to centre - debugging purposes only)
         Settings.PLAYER_POS = access_tile.col
 
-        self.player.execute()
-
-        # Temporary fix for 'left, right' 'right, left' over-moving?
-        # sequence = "".join([m[0] for m in commands])
-        # while "rl" in sequence or "lr" in sequence:
-        #     sequence = sequence.replace("rl", "")
-        #     sequence = sequence.replace("lr", "")
-        # commands = list(sequence)
-        #
-        # if Settings.MOVEMENT:
-        #     for do in commands:
-        #         k = key_names[do]
-        #         PressKey(k)
-        #         time.sleep(Settings.DELTA)
-        #         ReleaseKey(k)
-        #         time.sleep(Settings.DELTA)
-        #         if do == "switch":
-        #             time.sleep(Settings.DELTA)
-        #
-        # print(commands)
+        if Settings.MOVEMENT:
+            self.player.execute()
 
 
 class Chain:

@@ -67,11 +67,11 @@ class Grid:
                 break
         return c[i:]
 
-    def draw(self, _image):
+    def draw(self, _image, _mode="rgb"):
         self.check_set_up()
         for t in self.tiles:
             if t:
-                t.draw(_image)
+                t.draw(_image, _mode)
 
     def __repr__(self):
         self.check_set_up()

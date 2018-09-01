@@ -6,7 +6,7 @@ from directkeys import PressKey, ReleaseKey, J, K, LEFT, RIGHT
 
 class Player:
     def __init__(self):
-        self.pos = Settings.PLAYER_POS
+        self.pos = Settings.PLAYER_POS  # = 3
         self.command_str = ""
         self.key_names = {"l": LEFT, "r": RIGHT, "g": J, "s": K}
 
@@ -20,9 +20,9 @@ class Player:
 
     def execute(self):
         # Temporary fix for 'left, right' 'right, left' over-moving?
-        while "rl" in self.command_str or "lr" in self.command_str:
-            self.command_str = self.command_str.replace("rl", "")
-            self.command_str = self.command_str.replace("lr", "")
+        # while "rl" in self.command_str or "lr" in self.command_str:
+        #    self.command_str = self.command_str.replace("rl", "")
+        #    self.command_str = self.command_str.replace("lr", "")
 
         for char in self.command_str:
             k = self.key_names[char]
